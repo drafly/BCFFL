@@ -24,7 +24,7 @@ torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 
-Project_Path = r'/home/yananjia/FL/Robust_FL-master/'
+Project_Path = r'/home/../'
 
 def init_logs(log_level=logging.INFO,log_path = Project_Path+'Logs/',sub_name=None):
     # logging：https://www.cnblogs.com/CJOKER/p/8295272.html

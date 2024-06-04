@@ -1,7 +1,7 @@
 # Balanced Coarse-to-Fine Federated Learning For Noisy Heterogeneous Clients
 
 ## About
-This is a Pytorch implementation of BCFFL. This project is highly borrowed from [Robust Federated Learning with Noisy and Heterogeneous Clients]([https://github.com/SamitHuang/EV_GCN.git](https://github.com/FangXiuwen/Robust_FL)) (CVPR 2022) by Xiuwen Fang, and Mang Ye.
+This is a Pytorch implementation of BCFFL. This project is highly borrowed from [Robust Federated Learning with Noisy and Heterogeneous Clients](https://github.com/FangXiuwen/Robust_FL) (CVPR 2022) by Xiuwen Fang, and Mang Ye.
 
 ## Prerequisites
 - `Python 3.7.4+`

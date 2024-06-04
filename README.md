@@ -26,8 +26,10 @@ To train on Cifar10 and Cifar100 dataset, please run
 ```
 # init public data and local data
 python Dataset/init_data.py
+
 # pretrain local models
 python Network/pretrain.py
+
 # BCFFL
 python -u BCFFL/BCFFL.py first
 ```

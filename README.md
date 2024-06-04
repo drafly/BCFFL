@@ -4,13 +4,11 @@
 This is a Pytorch implementation of BCFFL. This project is highly borrowed from [Robust Federated Learning with Noisy and Heterogeneous Clients](https://github.com/FangXiuwen/Robust_FL) (CVPR 2022) by Xiuwen Fang, and Mang Ye.
 
 ## Prerequisites
-- `Python 3.7.4+`
-- `Pytorch 1.4.0`
-- `torch-geometric `
-- `scikit-learn`
-- `NumPy 1.16.2`
+- `Python 3.8.0`
+- `Pytorch 1.10.1`
+- `NumPy 1.20.1`
+- `tensorboardX 2.6.2.2`
 
-Ensure Pytorch 1.4.0 is installed before installing torch-geometric. 
 
 This code has been tested using `Pytorch` on a GTX3080TI GPU.
 
@@ -31,7 +29,7 @@ python Dataset/init_data.py
 python Network/pretrain.py
 
 # BCFFL
-python -u BCFFL/BCFFL.py first
+python -u BCFFL/BCFFL.py self-space
 ```
 
 ## Reference 

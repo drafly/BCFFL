@@ -22,7 +22,7 @@ Dataset used: [CIFAR-10、CIFAR-100](http://www.cs.toronto.edu/~kriz/cifar.html)
 Note: Data will be processed in init_data.py
 
 ## Training and Testing
-To train on ABIDE dataset, please run
+To train on Cifar10 and Cifar100 dataset, please run
 ```
 # init public data and local data
 python Dataset/init_data.py

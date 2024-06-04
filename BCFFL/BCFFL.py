@@ -102,7 +102,7 @@ def update_model_via_private_data_old(network,private_epoch,private_dataloader,l
     participant_local_loss_batch_list = []
     showLOSS = 0
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="first":
+        if sys.argv[1]=="self-space":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -171,7 +171,7 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
     u_w = rampup(curr_epoch,rampup_length=200)
     #showLOSS = 0
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="first":
+        if sys.argv[1]=="self-space":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -404,7 +404,7 @@ if __name__ =='__main__':
             train_dl_local, _, train_ds_local, _ = get_dataloader(dataset=Private_Dataset_Name,datadir=Private_Dataset_Dir,
             train_bs=TrainBatchSize,test_bs=TestBatchSize,dataidxs=private_dataidx, noise_type=Noise_type, noise_rate=Noise_rate)
             private_epoch = max(int(len(public_train_ds)/len(train_ds_local)),1)
-            if epoch_index > 100 :
+            if epoch_index > 20 :
                 network,private_loss_batch_list = update_model_via_private_data_old(network=network,private_epoch=private_epoch,
             private_dataloader=train_dl_local,loss_function=Pariticpant_Params['loss_funnction'],
             optimizer_method=Pariticpant_Params['optimizer_name'],learing_rate=Pariticpant_Params['learning_rate'],

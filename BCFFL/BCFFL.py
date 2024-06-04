@@ -256,7 +256,7 @@ if __name__ =='__main__':
         network = net_list[i]
         network = nn.DataParallel(network, device_ids=device_ids).to(device)
         netname = Private_Nets_Name_List[i]
-        network.load_state_dict(torch.load('/home/yananjia/FL/Robust_FL-master/Network/Model_Storage/' + Pariticpant_Params['loss_funnction'] + '/' + str(Noise_type) + str(Noise_rate)+ '/' + netname + '_' + str(i) + '.ckpt'))
+        network.load_state_dict(torch.load('/home/../BCFFL/Network/Model_Storage/' + Pariticpant_Params['loss_funnction'] + '/' + str(Noise_type) + str(Noise_rate)+ '/' + netname + '_' + str(i) + '.ckpt'))
 
         new_state_dict = {k.replace('module.', ''): v for k, v in network.load_state_dict.items()}
         network.load_state_dict(new_state_dict)

@@ -35,7 +35,7 @@ Pariticpant_Params = {
 }
 
 weight_criterion = CE(aggregate='mean')
-gamma = 1
+gamma = 10
 u_w = 0.0
 
 """CCR Module"""

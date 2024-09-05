@@ -102,7 +102,7 @@ def update_model_via_private_data_old(network,private_epoch,private_dataloader,l
     participant_local_loss_batch_list = []
     showLOSS = 0
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="first":
+        if sys.argv[1]=="self-space":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -175,7 +175,7 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
     #showLOSS = 0
 
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="first":
+        if sys.argv[1]=="self-space":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -189,7 +189,7 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
 
             images_lables = sorted(images_lables_loss.items())
 
-            quarters_length = int(len(images_lables) * 1)  #0.98
+            quarters_length = int(len(images_lables) * 1)  
             selected_images_lables = images_lables[:quarters_length]
 
             for loss_value, (imagess, labelss) in selected_images_lables:

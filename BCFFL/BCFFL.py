@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'/home/')
+sys.path.append(r'/root/..')
 print(sys.path)
 #sys.path.append("..")
 from Dataset.utils import init_logs, get_dataloader, init_nets, generate_public_data_indexs, mkdirs
@@ -46,7 +46,7 @@ if Client_Confidence_Reweight == False:
 else:
     beta = 0.5
 """Noise Setting"""
-Noise_type = 'symmetric' #['pairflip','symmetric',None]
+Noise_type = 'pairflip' #['pairflip','symmetric',None]
 Noise_rate = 0.1
 
 """Heterogeneous Model Setting"""
@@ -82,8 +82,8 @@ def evaluate_network(network,dataloader,logger):
 
 def rampup(global_step, rampup_length=200):
     if global_step < rampup_length:
-        global_step = np.float(global_step)
-        rampup_length = np.float(rampup_length)
+        global_step = float(global_step)
+        rampup_length = float(rampup_length)
         phase = 1.0 - np.maximum(0.0, global_step) / rampup_length
     else:
         phase = 0.0
@@ -102,7 +102,7 @@ def update_model_via_private_data_old(network,private_epoch,private_dataloader,l
     participant_local_loss_batch_list = []
     showLOSS = 0
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="self-space":
+        if sys.argv[1]=="first":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -111,29 +111,32 @@ def update_model_via_private_data_old(network,private_epoch,private_dataloader,l
                 outputs,_ = network(images)
                 loss = criterion(outputs, labels)
                 images_lables_loss[loss.item()] = [images,labels]
-            images_lables = []
-            for i in sorted(images_lables_loss):
-                images_lables.append(images_lables_loss[i])
-            for images_lable in images_lables:
-                imagess, labelss = images_lable
+        
+            images_lables = sorted(images_lables_loss.items())
+            quarters_length = int(len(images_lables) * 1)
+            selected_images_lables = images_lables[:quarters_length]
+
+            for loss_value, (imagess, labelss) in selected_images_lables:
                 outputs, _ = network(imagess)
                 losss = criterion(outputs, labelss)
                 optimizer.zero_grad()
 
-                #losss = regularizer_loss.regularized_all_param(reg_loss_function=losss)                
+                # losss = regularizer_loss.regularized_all_param(reg_loss_function=losss)
                 participant_local_loss_batch_list.append(losss.item())
-                
-            #participant_local_loss_batch_list.append(loss.item())
+
+                # participant_local_loss_batch_list.append(loss.item())
                 losss.backward()
                 optimizer.step()
-                if epoch_index % 5 ==0 and showLOSS != loss.item():
-                   showLOSS =loss.item()
-                # logger.info('Private Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                #     epoch_index, batch_idx * len(images), len(private_dataloader.dataset),
-                #            100. * batch_idx / len(private_dataloader), loss.item()))
-                   logger.info('Private Train : [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                    batch_idx * len(images), len(private_dataloader.dataset),
-                    100. * batch_idx / len(private_dataloader), loss.item()))
+                if epoch_index % 5 == 0 and showLOSS != loss.item():
+                    showLOSS = loss.item()
+                    # logger.info('Private Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    #     epoch_index, batch_idx * len(images), len(private_dataloader.dataset),
+                    #            100. * batch_idx / len(private_dataloader), loss.item()))
+                    logger.info('Private Train : [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                        batch_idx * len(images), len(private_dataloader.dataset),
+                        100. * batch_idx / len(private_dataloader), losss.item()))
+
+
         elif sys.argv[1] == "zero":
 #----------------未修改代码----用来对比---------------------------------------------------------------------
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -170,28 +173,33 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
     participant_local_loss_batch_list = []
     u_w = rampup(curr_epoch,rampup_length=200)
     #showLOSS = 0
+
     for epoch_index in range(private_epoch):
-        if sys.argv[1]=="self-space":
+        if sys.argv[1]=="first":
         #加入基本自步思想一次排序-----------------
             images_lables_loss = {}
             for batch_idx, (images, labels) in enumerate(private_dataloader):
                 images = images.to(device)
                 labels = labels.to(device)
                 outputs,_ = network(images)
-                loss = weight_criterion(outputs, labels)
-                images_lables_loss[loss.item()] = [images,labels]
-            images_lables = []
-            for i in sorted(images_lables_loss):
-                images_lables.append(images_lables_loss[i])
-            for images_lable in images_lables:
-                u_w_m = gamma*u_w
-                u_w_m = torch.autograd.Variable(torch.FloatTensor([u_w_m]).cuda(), requires_grad=False)                
-                imagess, labelss = images_lable
+                u_w_m = gamma * u_w
+                u_w_m = torch.autograd.Variable(torch.FloatTensor([u_w_m]).cuda(), requires_grad=False)
+                loss = u_w_m * weight_criterion(outputs, labels) / labels.sum()
+                images_lables_loss[loss.item()] = [images, labels]
+
+            images_lables = sorted(images_lables_loss.items())
+
+            quarters_length = int(len(images_lables) * 1)  #0.98
+            selected_images_lables = images_lables[:quarters_length]
+
+            for loss_value, (imagess, labelss) in selected_images_lables:
+                u_w_m = gamma * u_w
+                u_w_m = torch.autograd.Variable(torch.FloatTensor([u_w_m]).cuda(), requires_grad=False)
                 outputs, _ = network(imagess)
                 losss = u_w_m*weight_criterion(outputs, labelss)/labelss.sum()
                 optimizer.zero_grad()
-               # losss = regularizer_loss.regularized_all_param(reg_loss_function=losss) 
-                participant_local_loss_batch_list.append(loss.item())
+               # losss = regularizer_loss.regularized_all_param(reg_loss_function=losss)
+                participant_local_loss_batch_list.append(losss.item())
                 losss.backward()
                 optimizer.step()
                 if epoch_index % 5 ==0: # and showLOSS != loss.item():
@@ -201,7 +209,9 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
                 #            100. * batch_idx / len(private_dataloader), loss.item()))
                    logger.info('Private Train : [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     batch_idx * len(images), len(private_dataloader.dataset),
-                    100. * batch_idx / len(private_dataloader), loss.item()))
+                    100. * batch_idx / len(private_dataloader), losss.item()))
+
+
         elif sys.argv[1] == "zero":
 #----------------未修改代码----用来对比---------------------------------------------------------------------
             for batch_idx, (images, labels) in enumerate(private_dataloader):
@@ -234,8 +244,8 @@ if __name__ =='__main__':
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
-    device_ids = [0,1,2,3]
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    device_ids = [0]
     #device_ids=[0]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     torch.backends.cudnn.benchmark = False
@@ -256,10 +266,10 @@ if __name__ =='__main__':
         network = net_list[i]
         network = nn.DataParallel(network, device_ids=device_ids).to(device)
         netname = Private_Nets_Name_List[i]
-        network.load_state_dict(torch.load('/home/../BCFFL/Network/Model_Storage/' + Pariticpant_Params['loss_funnction'] + '/' + str(Noise_type) + str(Noise_rate)+ '/' + netname + '_' + str(i) + '.ckpt'))
+        network.load_state_dict(torch.load('/root/BCFFL/Network/Model_Storage/' + Pariticpant_Params['loss_funnction'] + '/' + str(Noise_type) + str(Noise_rate)+ '/' + netname + '_' + str(i) + '.ckpt'))
 
-        new_state_dict = {k.replace('module.', ''): v for k, v in network.load_state_dict.items()}
-        network.load_state_dict(new_state_dict)
+        # new_state_dict = {k.replace('module.', ''): v for k, v in network.load_state_dict.items()}
+        # network.load_state_dict(new_state_dict)
 
     logger.info("Initialize Public Data Parameters")
     public_data_indexs = generate_public_data_indexs(dataset=Public_Dataset_Name,datadir=Public_Dataset_Dir,size=Public_Dataset_Length, noise_type=Noise_type, noise_rate=Noise_rate)
@@ -292,8 +302,7 @@ if __name__ =='__main__':
         '''
         Calculate Client Confidence with label quality and model performance
         '''
-        #总：计算标签质量
-        #计算当前轮次的损失值
+        
         amount_with_quality = [1 / (N_Participants - 1) for i in range(N_Participants)] 
         weight_with_quality = []
         quality_list = []
@@ -324,8 +333,7 @@ if __name__ =='__main__':
             mean_participant_loss = mean(participant_loss_list)
             current_mean_loss_list.append(mean_participant_loss)
         #EXP标准化处理
-        #客户端加权，提高模型对高质量标签的学习
-        #步骤，计算私有数据集上的损失，计算标签质量变化，调整质量权重，用于全局学习
+       
         if epoch_index > 0 :
             for participant_index in range(N_Participants):
                 delta_loss = last_mean_loss_list[participant_index] - current_mean_loss_list[participant_index]
@@ -364,7 +372,7 @@ if __name__ =='__main__':
             '''
             Update Participants' Models via KL Loss and Data Quality
             '''
-            #得到标准的测试数据集，用来评估模型的性能，更新数据质量的权重
+            
             for participant_index in range(N_Participants):
                 network = net_list[participant_index]
                 network = nn.DataParallel(network, device_ids=device_ids).to(device)
@@ -463,5 +471,4 @@ if __name__ =='__main__':
                 torch.save(network.state_dict(),
                            './test/Model_Storage/' +Pariticpant_Params['loss_funnction']+'/'+ str(Noise_type) + str(Noise_rate) + '/'
                            + netname + '_' + str(participant_index) + '.ckpt')
-
 

@@ -49,6 +49,9 @@ else:
 Noise_type = 'pairflip' #['pairflip','symmetric',None]
 Noise_rate = 0.1
 
+"""Training ratio"""
+train_ratio = 1.0
+
 """Heterogeneous Model Setting"""
 Private_Nets_Name_List = ['ResNet10','ResNet12','ShuffleNet','Mobilenetv2']
 """Homogeneous Model Setting"""
@@ -113,7 +116,7 @@ def update_model_via_private_data_old(network,private_epoch,private_dataloader,l
                 images_lables_loss[loss.item()] = [images,labels]
         
             images_lables = sorted(images_lables_loss.items())
-            quarters_length = int(len(images_lables) * 1)
+            quarters_length = int(len(images_lables) * train_ratio)
             selected_images_lables = images_lables[:quarters_length]
 
             for loss_value, (imagess, labelss) in selected_images_lables:
@@ -189,7 +192,7 @@ def update_model_via_private_data_new(network,private_epoch,private_dataloader,l
 
             images_lables = sorted(images_lables_loss.items())
 
-            quarters_length = int(len(images_lables) * 1)  
+            quarters_length = int(len(images_lables) * train_ratio)  
             selected_images_lables = images_lables[:quarters_length]
 
             for loss_value, (imagess, labelss) in selected_images_lables:

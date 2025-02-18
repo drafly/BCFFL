@@ -36,6 +36,7 @@ python -u BCFFL/BCFFL.py self-space
 If you find this code useful in your work, please cite:
 
 、、、
+
 @article{han2025balanced,
   title={Balanced coarse-to-fine federated learning for noisy heterogeneous clients},
   author={Han, Longfei and Zhai, Ying and Jia, Yanan and Cai, Qiang and Li, Haisheng and Huang, Xiankai},
